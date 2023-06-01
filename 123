@@ -1,1 +1,1025 @@
+<?php
+wp_enqueue_script( 'jquery' );
 
+
+function enqueue_slick_scripts() {
+    wp_enqueue_style( 'slick-css', get_template_directory_uri() . '/kv/slick-1.8.1/slick.css' );
+    wp_enqueue_style( 'slick-theme-css', get_template_directory_uri() . '/kv/slick-1.8.1/slick-theme.css' );
+    wp_enqueue_script( 'slick-js', get_template_directory_uri() . '/kv/slick-1.8.1/slick.min.js', array( 'jquery' ), '1.8.1', true );
+}
+add_action( 'wp_enqueue_scripts', 'enqueue_slick_scripts' );
+
+
+
+
+//
+//
+//
+function custom_upload_rename( $file ) {
+    $time = current_time( 'Y_m_d_Hi' ); // текущая дата и время
+    $filename = pathinfo( $file['name'], PATHINFO_FILENAME ); // имя файла без расширения
+    $extension = pathinfo( $file['name'], PATHINFO_EXTENSION ); // расширение файла
+
+    $new_filename = $filename . '-' . $time . '.' . $extension; // новое имя файла с датой и временем
+    $file['name'] = wp_unique_filename( $file['upload_path'], $new_filename ); // генерируем уникальное имя файла
+
+    return $file;
+}
+
+add_filter( 'wp_handle_upload_prefilter', 'custom_upload_rename' );
+
+////
+
+add_theme_support( 'post-thumbnails' );
+
+//конец
+add_filter( 'auto_update_plugin', '__return_false' );
+
+// прописать в functions.php 
+if (!function_exists('pagination')) { // если ф-я уже есть в дочерней теме - нам не надо её определять
+  function pagination() { // функция вывода пагинации
+    global $q; // текущая выборка должна быть глобальной
+    $big = 999999999; // число для замены
+    
+	  
+	  
+	  
+    
+    $links = paginate_links(array( // вывод пагинации с опциями ниже
+      'base' => str_replace($big, '%#%', esc_url(get_pagenum_link($big))), // что заменяем в формате ниже
+      'format' => '?paged=%#%', // формат, %#% будет заменено
+      'current' => max(1, get_query_var('paged')), // текущая страница, 1, если $_GET['page'] не определено
+      'type' => 'array', // нам надо получить массив
+      'prev_text'    => 'Назад', // текст назад
+      	'next_text'    => 'Вперед', // текст вперед
+      'total' => $q->max_num_pages, // общие кол-во страниц в пагинации
+      'show_all'     => false, // не показывать ссылки на все страницы, иначе end_size и mid_size будут проигнорированны
+      'end_size'     => 4, //  сколько страниц показать в начале и конце списка (12 ... 4 ... 89)
+      'mid_size'     => 1, // сколько страниц показать вокруг текущей страницы (... 123 5 678 ...).
+      'add_args'     => false, // массив GET параметров для добавления в ссылку страницы
+      'add_fragment' => '',	// строка для добавления в конец ссылки на страницу
+      'before_page_number' => '', // строка перед цифрой
+      'after_page_number' => '' // строка после цифры
+    ));
+    
+   	if( is_array( $links ) ) { // если пагинация есть
+        echo '<ul class="pagination">';
+        foreach ( $links as $link ) {
+        	if ( strpos( $link, 'current' ) !== false ) echo "<li class='active'>$link</li>"; // если это активная страница
+            else echo "<li>$link</li>"; 
+        }
+       	echo '</ul>';
+     }
+  }
+}
+
+// вывод в шаблоне
+pagination();
+
+
+add_action( 'wp_ajax_myaction', 'my_action' );
+add_action( 'wp_ajax_nopriv_myaction', 'my_action' );
+
+
+
+
+
+
+
+
+//Запрет на обновления 
+//плагинов 
+add_filter( 'auto_update_plugin', '__return_false' );
+//темы 
+add_filter( 'auto_update_theme', '__return_false' );
+//ядра 
+//define( 'WP_AUTO_UPDATE_CORE', false );
+//конец запретов 
+// Register Script
+// define('WP_ALLOW_REPAIR', true); //отладка таблицы
+// Register Style
+/*function slaiderJS() {
+
+	wp_register_style( 'slaiderJS', '/sl/chiefslider.min.css', false, false );
+
+}
+add_action( 'wp_enqueue_scripts', 'slaiderJS' );
+
+function custom_scripts() {
+
+	wp_register_script( 'slaiderJS', '/sl/chiefslider.min.js', false, false, false );
+
+}
+add_action( 'wp_enqueue_scripts', 'custom_scripts' );
+*/
+
+add_filter('carousel_slider_load_scripts', 'carousel_slider_load_scripts');
+function carousel_slider_load_scripts($load_scripts)
+{
+    return true;
+}
+
+add_action('admin_menu', 'menu_panel_grafik_rabot');
+add_action('wp_enqueue_scripts', 'mpcth_child_enqueue_scripts');
+
+function mpcth_child_enqueue_scripts()
+{
+    wp_enqueue_style('true_stili', get_stylesheet_directory_uri() . '/css/style.css');
+    wp_enqueue_style('bootstrap', get_stylesheet_directory_uri() . '/bootstrap/css/bootstrap.min.css');
+	wp_enqueue_style('slaider', get_stylesheet_directory_uri() . '/sl/chiefslider.min.css');
+   
+    wp_enqueue_style('tmplstyle', get_stylesheet_directory_uri() . '/css/style.css?v=5');
+    wp_enqueue_script('mpc-child-main-js', get_stylesheet_directory_uri() . '/js/main.js', array('jquery', 'mpc-theme-plugins-js'), '1.0', true);
+   /* wp_enqueue_script('respond', get_stylesheet_directory_uri() . '/js/respond.min.js');*/
+    wp_enqueue_script('bootstrap', get_stylesheet_directory_uri() . '/bootstrap/js/bootstrap.min.js');
+
+}
+
+
+
+add_image_size('gallerythumb', 300, 200, true); // (cropped)
+add_image_size('facethumb', 200, 250, true); // (cropped)
+add_image_size('news', 300, 300, false); // (cropped)
+
+function filter_jpeg_quality($quality)
+{
+    return 60;
+}
+add_filter('jpeg_quality', 'filter_jpeg_quality');
+
+/* ---------------------------------------------------------------- */
+/* Add post meta
+  /* ---------------------------------------------------------------- */
+
+function mpcth_add_meta2()
+{
+    echo '<time datetime="' . get_the_date('c') . '"><i class="fa fa-calendar"></i> ' . get_the_time(get_option('date_format')) . '</time>';
+    //echo '<span class="mpcth-author"><span class="mpcth-static-text">' . __(' by', 'mpcth') . ' </span><a href="' . get_author_posts_url( get_the_author_meta( 'ID') ) . '">' . get_the_author() . '</a></span>';
+
+    if (get_post_type() == 'mpc_portfolio')
+        $categories = get_the_term_list(get_the_ID(), 'mpc_portfolio_cat', '', ', ', '');
+    else
+        $categories = get_the_category_list(__(', ', 'mpcth'));
+
+    if ($categories)
+        echo '<span class="mpcth-categories"><span class="mpcth-static-text"> | </span>' . $categories . '</span>';
+
+    if (comments_open()) {
+        echo '<span class="mpcth-comments"><a href="' . get_comments_link(get_the_ID()) . '" title="' . esc_attr(__('View post comments', 'mpcth')) . '" rel="comments">';
+        comments_number(__('0 comments', 'mpcth'), __('1 comment', 'mpcth'), __('% comments', 'mpcth'));
+        echo '</a></span>';
+    }
+
+    $video = get_field('video');
+    if ($video) {
+        echo '<a href="' . get_the_permalink() . '#video" class="video" ><i class="fas fa-video"></i> Видео</a>';
+    }
+}
+
+
+
+// Добавление виджетов widgets
+
+function my_widgets_init()
+{
+
+  register_sidebar(array(
+        'name'          => esc_html__('Дата', 'data'),
+        'id'            => 'data',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>'
+    ));
+   
+    register_sidebar(array(
+        'name'          => esc_html__('Сладер', 'zs'),
+        'id'            => 'zs',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>'
+    ));
+
+    register_sidebar(array(
+        'name'          => esc_html__('Сладер2', 'zs01'),
+        'id'            => 'zs01',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>'
+    ));
+
+
+
+    register_sidebar(array(
+        'name'          => esc_html__('Сладер4', 'zs04'),
+        'id'            => 'zs04',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>'
+    ));
+
+    register_sidebar(array(
+        'name'          => esc_html__('Сладер5', 'zs05'),
+        'id'            => 'zs05',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>'
+    ));
+
+    register_sidebar(array(
+        'name'          => esc_html__('Сладер6', 'zs06'),
+        'id'            => 'zs06',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>'
+    ));
+
+    register_sidebar(array(
+        'name'          => esc_html__('Сладер7', 'zs07'),
+        'id'            => 'zs07',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>'
+    ));
+
+    register_sidebar(array(
+        'name'          => esc_html__('Сладер8', 'zs08'),
+        'id'            => 'zs08',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>'
+    ));
+
+
+  
+   
+
+   
+
+  
+
+    register_sidebar(array(
+        'name'          => esc_html__('Видео', 'newszine'),
+        'id'            => 'new6',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>',
+    ));
+
+    register_sidebar(array(
+        'name'          => esc_html__('Указы', 'newszine'),
+        'id'            => 'new7',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>',
+    ));
+
+  
+
+    register_sidebar(array(
+        'name'          => esc_html__('Монитиоринг', 'newszine'),
+        'id'            => 'new9',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>',
+    ));
+
+    register_sidebar(array(
+        'name'          => esc_html__('Календарь', 'newszine'),
+        'id'            => 'new10',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>',
+    ));
+
+    register_sidebar(array(
+        'name'          => esc_html__('Нев патр', 'newszine'),
+        'id'            => 'new11',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>',
+    ));
+
+    register_sidebar(array(
+        'name'          => esc_html__('клоллик', 'newszine'),
+        'id'            => 'new11',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>',
+    ));
+
+    register_sidebar(array(
+        'name'          => esc_html__('Новости Патрихии', 'newszine'),
+        'id'            => 'new01',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>'
+    ));
+
+    register_sidebar(array(
+        'name'          => esc_html__('Патриарх', 'newszine'),
+        'id'            => 'new02',
+        'description'   => '',
+        'before_widget' => '<div class="block">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h2 class="block-title">',
+        'after_title'   => '</h2>'
+    ));
+
+    
+    register_sidebar(array(
+        'name' => 'Footer1',
+        'id' => 'footer1',
+        'description' => '',
+        'before_widget' => '',
+        'after_widget' => '',
+        'before_title' => '',
+        'after_title' => '',
+    ));
+    register_sidebar(array(
+        'name' => 'Footer2',
+        'id' => 'footer2',
+        'description' => '',
+        'before_widget' => '',
+        'after_widget' => '',
+        'before_title' => '',
+        'after_title' => '',
+    ));
+
+    register_sidebar(array(
+        'name' => 'Footer21',
+        'id' => 'footer21',
+        'description' => '',
+        'before_widget' => '',
+        'after_widget' => '',
+        'before_title' => '',
+        'after_title' => '',
+    ));
+
+    register_sidebar(array(
+        'name' => 'Footer201',
+        'id' => 'footer201',
+        'description' => '',
+        'before_widget' => '',
+        'after_widget' => '',
+        'before_title' => '',
+        'after_title' => '',
+    ));
+
+    register_sidebar(array(
+        'name' => 'Footer3',
+        'id' => 'footer3',
+        'description' => '',
+        'before_widget' => '',
+        'after_widget' => '',
+        'before_title' => '',
+        'after_title' => '',
+    ));
+    
+}
+
+add_action('widgets_init', 'my_widgets_init');
+
+function raft_cat_archive($CATID)
+{
+    global $month, $wpdb;
+    $li = '';
+    $SQL = '';
+    $SQLL = '';
+    $result = '';
+    $args = array(
+        'numberposts' => 0,
+        'showposts' => 1000,
+        'offset' => 0,
+        'category' => $CATID,
+        'orderby' => 'post_date',
+        'order' => 'DESC',
+        'include' => '',
+        'exclude' => '',
+        'meta_key' => '',
+        'meta_value' => '',
+        'post_type' => 'post',
+        'post_mime_type' => '',
+        'post_parent' => '',
+        'post_status' => 'publish'
+    );
+    $posts_array = get_posts($args);
+    if (is_array($posts_array) && count($posts_array) > 0) {
+        foreach ($posts_array as $vp) {
+            $SQL .= " ID='$vp->ID' OR";
+        }
+    }
+    $SQL = substr($SQL, 0, strlen($SQL) - 3);
+    $SQLL = "SELECT YEAR(post_date) AS 'Y', MONTH(post_date) AS 'M', ID, post_date, post_title, comment_status, guid, comment_count FROM wp_posts WHERE $SQL ORDER BY post_date DESC";
+    $related_posts = $wpdb->get_results($SQLL);
+    foreach ($related_posts as $post) {
+        $PST[$post->Y][$post->M][] = array($post->post_title, $post->ID);
+    }
+    $MON = array(
+        '1' => 'Январь',
+        '2' => 'Февраль',
+        '3' => 'Март',
+        '4' => 'Апрель',
+        '5' => 'Май',
+        '6' => 'Июнь',
+        '7' => 'Июль',
+        '8' => 'Август',
+        '9' => 'Сентябрь',
+        '10' => 'Октябрь',
+        '11' => 'Ноябрь',
+        '12' => 'Декабрь'
+    );
+    foreach ($PST as $YS => $PL) {
+        foreach ($PL as $MN => $PM) {
+            $DDD = "" . $MON[$MN] . " $YS";
+            foreach ($PM as $K => $POS) {
+                $url = get_permalink($POS[1]);
+                $arc_title = $POS[0];
+                if ($arc_title)
+                    $text = strip_tags($arc_title);
+                $dd = get_the_time('d.m.Y', $POS[1]);
+                $result .= "<div class='archnews'><div class='archnewsd'>" . $dd . "</div>\n";
+                $result .= "<div class='archnewst'>| &nbsp; " . get_archives_link($url, $text, '') . "</div><div class='clear'></div></div>\n";
+            }
+            $G = "<div class='archnewslist'>$result</div><hr />";
+            $result = '';
+            $li .= "<div class='archnewsdate'>$DDD</div>$G";
+        }
+    }
+    return "$li";
+}
+
+// Вывод галереи
+
+add_filter('post_gallery', 'my_post_gallery', 10, 2);
+
+function my_post_gallery($output, $attr)
+{
+    global $post;
+
+    if (isset($attr['orderby'])) {
+        $attr['orderby'] = sanitize_sql_orderby($attr['orderby']);
+        if (!$attr['orderby'])
+            unset($attr['orderby']);
+    }
+
+    extract(shortcode_atts(array(
+        'order' => 'ASC',
+        'orderby' => 'menu_order ID',
+        'id' => $post->ID,
+        'itemtag' => 'dl',
+        'icontag' => 'dt',
+        'captiontag' => 'dd',
+        'columns' => 3,
+        'size' => 'thumbnail',
+        'include' => '',
+        'exclude' => ''
+    ), $attr));
+
+    $id = intval($id);
+    if ('RAND' == $order)
+        $orderby = 'none';
+
+    if (!empty($include)) {
+        $include = preg_replace('/[^0-9,]+/', '', $include);
+        $_attachments = get_posts(array('include' => $include, 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $order, 'orderby' => $orderby));
+
+        $attachments = array();
+        foreach ($_attachments as $key => $val) {
+            $attachments[$val->ID] = $_attachments[$key];
+        }
+    }
+
+    if (empty($attachments))
+        return '';
+
+    // Here's your actual output, you may customize it to your need
+    $output = "<div class='clr' ></div><div class=\"kvgallery\"><div class='row'  >";
+    $i = 1;
+    // Now you loop through each attachment
+    foreach ($attachments as $id => $attachment) {
+        // Fetch the thumbnail (or full image, it's up to you)
+        //      $img = wp_get_attachment_image_src($id, 'medium');
+        //      $img = wp_get_attachment_image_src($id, 'my-custom-image-size');
+        $img = wp_get_attachment_image_src($id, 'gallerythumb');
+        $imglarge = wp_get_attachment_image_src($id, 'full');
+        $output .= "<div class='col-sm-4' ><a href='$imglarge[0]' rel='ral" . get_the_ID() . "' class='mpcth-lightbox mpcth-lightbox-type-image gallitem' ><img src=\"{$img[0]}\" width=\"{$img[1]}\" height=\"{$img[2]}\" alt=\"\" /></a></div>";
+        $i++;
+        if ($i > 3) {
+            $output .= "</div><div class='row' >";
+            $i = 1;
+        }
+    }
+
+
+    $output .= "</div></div><div class='clr'></div>";
+
+    return $output;
+}
+
+function currentsubmenu_shortcode()
+{
+    wp_nav_menu(array(
+        'theme_location' => 'mpcth_menu',
+        'sub_menu' => true
+    ));
+}
+
+add_shortcode('currentsubmenu', 'currentsubmenu_shortcode');
+
+// add hook
+add_filter('wp_nav_menu_objects', 'my_wp_nav_menu_objects_sub_menu', 10, 2);
+
+// filter_hook function to react on sub_menu flag
+function my_wp_nav_menu_objects_sub_menu($sorted_menu_items, $args)
+{
+    if (isset($args->sub_menu)) {
+        $root_id = 0;
+
+        // find the current menu item
+        foreach ($sorted_menu_items as $menu_item) {
+            if ($menu_item->current) {
+                // set the root id based on whether the current menu item has a parent or not
+                $root_id = ($menu_item->menu_item_parent) ? $menu_item->menu_item_parent : $menu_item->ID;
+                break;
+            }
+        }
+
+        // find the top level parent
+        if (!isset($args->direct_parent)) {
+            $prev_root_id = $root_id;
+            while ($prev_root_id != 0) {
+                foreach ($sorted_menu_items as $menu_item) {
+                    if ($menu_item->ID == $prev_root_id) {
+                        $prev_root_id = $menu_item->menu_item_parent;
+                        // don't set the root_id to 0 if we've reached the top of the menu
+                        if ($prev_root_id != 0)
+                            $root_id = $menu_item->menu_item_parent;
+                        break;
+                    }
+                }
+            }
+        }
+
+        $menu_item_parents = array();
+        foreach ($sorted_menu_items as $key => $item) {
+            // init menu_item_parents
+            if ($item->ID == $root_id)
+                $menu_item_parents[] = $item->ID;
+
+            if (in_array($item->menu_item_parent, $menu_item_parents)) {
+                // part of sub-tree: keep!
+                $menu_item_parents[] = $item->ID;
+            } else if (!(isset($args->show_parent) && in_array($item->ID, $menu_item_parents))) {
+                // not part of sub-tree: away with it!
+                unset($sorted_menu_items[$key]);
+            }
+        }
+
+        return $sorted_menu_items;
+    } else {
+        return $sorted_menu_items;
+    }
+}
+
+function submenuList_func($atts)
+{
+    $submenu =  wp_nav_menu(array(
+        'theme_location' => 'mpcth_menu',
+        'sub_menu' => true,
+        'echo' => false,
+        'menu_class' => 'submenupage',
+    ));
+    return $submenu;
+}
+add_filter('widget_title', 'accept_html_widget_title');
+function accept_html_widget_title($mytitle)
+{
+
+    $mytitle = str_replace('[link', '<a', $mytitle);
+    $mytitle = str_replace('[/link]', '</a>', $mytitle);
+    $mytitle = str_replace(']', '>', $mytitle);
+    return $mytitle;
+}
+add_shortcode('submenuList', 'submenuList_func');
+
+add_action('admin_print_scripts', 'my_admin_term_filter', 99);
+function my_admin_term_filter()
+{
+    $screen = get_current_screen();
+
+    if ('post' !== $screen->base) return; // только для страницы редактирвоания любой записи
+?>
+    <script>
+        jQuery(document).ready(function($) {
+            var $categoryDivs = $('.categorydiv');
+
+            $categoryDivs.prepend('<input type="search" class="fc-search-field" placeholder="фильтр..." style="width:100%" />');
+
+            $categoryDivs.on('keyup search', '.fc-search-field', function(event) {
+
+                var searchTerm = event.target.value,
+                    $listItems = $(this).parent().find('.categorychecklist li');
+
+                if ($.trim(searchTerm)) {
+                    $listItems.hide().filter(function() {
+                        return $(this).text().toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+                    }).show();
+                } else {
+                    $listItems.show();
+                }
+            });
+        });
+    </script>
+<?php
+}
+
+if (!current_user_can('edit_users')) {
+    add_filter('auto_update_core', '__return_false');   // обновление ядра
+
+    add_filter('pre_site_transient_update_core', '__return_null');
+}
+
+add_action('admin_print_footer_scripts', 'hide_tax_metabox_tabs_admin_styles', 99);
+function hide_tax_metabox_tabs_admin_styles()
+{
+    $cs = get_current_screen();
+    if ($cs->base !== 'post' || empty($cs->post_type)) return; // не страница редактирования записи
+?>
+    <style>
+        .postbox div.tabs-panel {
+            max-height: 1200px;
+            border: 0;
+        }
+
+        .category-tabs {
+            display: none;
+        }
+    </style>
+<?php
+}
+
+add_filter('transient_update_plugins', 'update_active_plugins');    // Hook for 2.8.+
+//add_filter('option_update_plugins', 'update_active_plugins');    // Hook for 2.7.x
+function update_active_plugins($value = '')
+{
+    /*
+	The $value array passed in contains the list of plugins with time
+	marks when the last time the groups was checked for version match
+	The $value->reponse node contains an array of the items that are
+	out of date. This response node is use by the 'Plugins' menu
+	for example to indicate there are updates. Also on the actual
+	plugins listing to provide the yellow box below a given plugin
+	to indicate action is needed by the user.
+	*/
+    if ((isset($value->response)) && (count($value->response))) {
+
+        // Get the list cut current active plugins
+        $active_plugins = get_option('active_plugins');
+        if ($active_plugins) {
+
+            //  Here we start to compare the $value->response
+            //  items checking each against the active plugins list.
+            foreach ($value->response as $plugin_idx => $plugin_item) {
+
+                // If the response item is not an active plugin then remove it.
+                // This will prevent WordPress from indicating the plugin needs update actions.
+                if (!in_array($plugin_idx, $active_plugins))
+                    unset($value->response[$plugin_idx]);
+            }
+        } else {
+            // If no active plugins then ignore the inactive out of date ones.
+            foreach ($value->response as $plugin_idx => $plugin_item) {
+                unset($value->response);
+            }
+        }
+    }
+    return $value;
+}
+
+/**
+ * Allow SVG files in Media Library.
+ */
+function extra_mime_types($mimes)
+{
+
+    $mimes['svg'] = 'image/svg+xml';
+
+    return $mimes;
+}
+add_filter('upload_mimes', 'extra_mime_types');
+
+// Стили для TinyMCE редактора
+// Нужно создать файл 'editor-styles.css' в папке темы
+add_action('current_screen', 'my_theme_add_editor_styles');
+function my_theme_add_editor_styles()
+{
+    add_editor_style('editor-styles.css');
+}
+
+## CSS для страницы входа (login)
+## Нужно создать файл 'wp-login.css' в папке темы
+add_action('login_head', 'my_loginCSS');
+function my_loginCSS()
+{
+    echo '<link rel="stylesheet" type="text/css" href="' . get_template_directory_uri() . '/wp-login.css"/>';
+}
+
+if (extension_loaded('zlib') && ini_get('output_handler') != 'ob_gzhandler') {
+    add_action('wp', function () {
+        @ob_end_clean();
+        @ini_set('zlib.output_compression', 'on');
+    });
+}
+
+function do_excerpt($string, $word_limit)
+{
+    $words = explode(' ', $string, ($word_limit + 1));
+    if (count($words) > $word_limit)
+        array_pop($words);
+    echo implode(' ', $words) . ' ...';
+}
+
+function getPostViews($postID)
+{
+    $count_key = 'post_views_count';
+    $count = get_post_meta($postID, $count_key, true);
+    if ($count == '') {
+        delete_post_meta($postID, $count_key);
+        add_post_meta($postID, $count_key, '0');
+        return "0 просмотров";
+    }
+    return $count . ' просмотров';
+}
+function setPostViews($postID)
+{
+    $count_key = 'post_views_count';
+    $count = get_post_meta($postID, $count_key, true);
+    if ($count == '') {
+        $count = 0;
+        delete_post_meta($postID, $count_key);
+        add_post_meta($postID, $count_key, '0');
+    } else {
+        $count++;
+        update_post_meta($postID, $count_key, $count);
+    }
+}
+
+//Расписание Богослужений
+add_action('init', 'my_custom_init');
+function my_custom_init()
+{
+    register_post_type('book', array(
+        'labels'             => array(
+            'name'               => 'Расписание богослужений', // Основное название типа записи
+            'singular_name'      => 'Богослужение', // отдельное название записи типа 
+            'add_new'            => 'Добавить новую службу',
+            'add_new_item'       => 'Добавить новую службу',
+            'edit_item'          => 'Редактировать службу',
+            'new_item'           => 'Новая служба',
+            'view_item'          => 'Посмотреть службы',
+            'search_items'       => 'Найти службу',
+            'not_found'          => 'служб не найдено',
+            'not_found_in_trash' => 'В корзине богослужений не найдено',
+            'parent_item_colon'  => '',
+            'menu_name'          => 'Расписание богослужений'
+
+        ),
+        'public'             => false,
+        'publicly_queryable' => true,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'query_var'          => true,
+        'rewrite'            => true,
+        'capability_type'    => 'post',
+        'has_archive'        => true,
+        'hierarchical'       => false,
+        'menu_position'      => 1, // где будет находиться 
+        'menu_icon'      => 'dashicons-menu-alt3', // иконка 
+        'supports'           => array('title', 'mesto_provedeniya')
+
+    ));
+}
+
+// Сообщения при публикации или изменении типа записи book
+add_filter('post_updated_messages', 'book_updated_messages');
+function book_updated_messages($messages)
+{
+    global $post;
+
+    $messages['book'] = array(
+        0 => '', // Не используется. Сообщения используются с индекса 1.
+        1 => sprintf('Богослужение обновлено. <a href="%s">Посмотреть запись Богослужения</a>', esc_url(get_permalink($post->ID))),
+        2 => 'Произвольное поле обновлено.',
+        3 => 'Произвольное поле удалено.',
+        4 => 'Запись Богослужения обновлена.',
+        /* %s: дата и время ревизии */
+        5 => isset($_GET['revision']) ? sprintf('Запись Богослужения восстановлена из ревизии %s', wp_post_revision_title((int) $_GET['revision'], false)) : false,
+        6 => sprintf('Запись Богослужения опубликована. <a href="%s">Перейти к записи Богослужения</a>', esc_url(get_permalink($post->ID))),
+        7 => 'Запись Богослужения сохранена.',
+        8 => sprintf('Запись Богослужения сохранена. <a target="_blank" href="%s">Предпросмотр записи Богослужнния</a>', esc_url(add_query_arg('preview', 'true', get_permalink($post->ID)))),
+        9 => sprintf(
+            'Запись Богослужения запланирована на: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Предпросмотр записи book</a>',
+            // Как форматировать даты в PHP можно посмотреть тут: http://php.net/date
+            date_i18n(__('M j, Y @ G:i'), strtotime($post->post_date)),
+            esc_url(get_permalink($post->ID))
+        ),
+        10 => sprintf('Черновик записи Богосжения обновлен. <a target="_blank" href="%s">Предпросмотр записи Богослужения</a>', esc_url(add_query_arg('preview', 'true', get_permalink($post->ID)))),
+    );
+
+    return $messages;
+}
+
+
+
+/* Дополнительные сортируемые колонки для постов в админке 
+------------------------------------------------------------------------ */
+// создаем новую колонку
+add_filter('manage_book_posts_columns', 'add_views_column', 4);
+function add_views_column($columns)
+{
+    // удаляем колонку Автор
+    //unset($columns['author']);
+
+    // вставляем в нужное место - 3 - 3-я колонка
+    $out = array();
+    foreach ($columns as $col => $name) {
+        if (++$i == 3)
+            $out['mesto_provedeniya'] = 'Храм';
+        $out[$col] = $name;
+    }
+
+    return $out;
+}
+// заполняем колонку данными -  wp-admin/includes/class-wp-posts-list-table.php
+add_filter('manage_book_posts_custom_column', 'fill_views_column', 5, 2);
+function fill_views_column($colname, $post_id)
+{
+    if ($colname === 'mesto_provedeniya') {
+        echo get_post_meta($post_id, 'mesto_provedeniya', 1);
+    }
+}
+
+// подправим ширину колонки через css
+add_action('admin_head', 'add_views_column_css');
+function add_views_column_css()
+{
+    if (get_current_screen()->base == 'edit')
+        echo '<style type="text/css">.column-views{width:10%;}</style>';
+}
+
+// добавляем возможность сортировать колонку
+add_filter('manage_edit-post_sortable_columns', 'add_views_sortable_column');
+function add_views_sortable_column($sortable_columns)
+{
+    $sortable_columns['mesto_provedeniya'] = 'views_views';
+
+    return $sortable_columns;
+}
+
+// изменяем запрос при сортировке колонки
+add_filter('pre_get_posts', 'add_column_views_request');
+function add_column_views_request($object)
+{
+    if ($object->get('orderby') != 'mesto_provedeniya')
+        return;
+
+    $object->set('meta_key', 'mesto_provedeniya');
+    $object->set('orderby', 'meta_value_num');
+}
+
+
+
+//Счетчик просмотров 
+
+// Register Custom Taxonomy
+/*
+function custom_taxonomy() {
+
+	$labels = array(
+		'name'                       => _x( 'год', 'Taxonomy General Name', 'text_domain' ),
+		'singular_name'              => _x( 'год', 'Taxonomy Singular Name', 'text_domain' ),
+		'menu_name'                  => __( 'год', 'text_domain' ),
+		'all_items'                  => __( 'год', 'text_domain' ),
+		'parent_item'                => __( 'Год', 'text_domain' ),
+		'parent_item_colon'          => __( '', 'text_domain' ),
+		'new_item_name'              => __( 'год', 'text_domain' ),
+		'add_new_item'               => __( 'год', 'text_domain' ),
+		'edit_item'                  => __( 'год', 'text_domain' ),
+		'update_item'                => __( 'год', 'text_domain' ),
+		'view_item'                  => __( 'год', 'text_domain' ),
+		'separate_items_with_commas' => __( '', 'text_domain' ),
+		'add_or_remove_items'        => __( 'год', 'text_domain' ),
+		'choose_from_most_used'      => __( 'Choose from the most used', 'text_domain' ),
+		'popular_items'              => __( 'Popular Items', 'text_domain' ),
+		'search_items'               => __( 'Search Items', 'text_domain' ),
+		'not_found'                  => __( 'Not Found', 'text_domain' ),
+		'no_terms'                   => __( 'No items', 'text_domain' ),
+		'items_list'                 => __( 'Items list', 'text_domain' ),
+		'items_list_navigation'      => __( 'Items list navigation', 'text_domain' ),
+	);
+	$args = array(
+		'labels'                     => $labels,
+		'hierarchical'               => true,
+		'public'                     => true,
+		'show_ui'                    => true,
+		'show_admin_column'          => true,
+		'show_in_nav_menus'          => true,
+		'show_tagcloud'              => false,
+	);
+	register_taxonomy( 'ykazi', array( 'ykaz' ), $args );
+
+}
+add_action( 'init', 'custom_taxonomy', 0 );
+
+
+
+// Register Custom Post Type
+function custom_post_type() {
+
+	$labels = array(
+		'name'                  => _x( 'Указы и распоряжения', 'Post Type General Name', 'text_domain' ),
+		'singular_name'         => _x( 'Указы', 'Post Type Singular Name', 'text_domain' ),
+		'menu_name'             => __( 'Указы и распоряжения', 'text_domain' ),
+		'name_admin_bar'        => __( 'Указы', 'text_domain' ),
+		'archives'              => __( 'Указов и распоряжений', 'text_domain' ),
+		'attributes'            => __( 'Item Attributes', 'text_domain' ),
+		'parent_item_colon'     => __( 'Parent Item:', 'text_domain' ),
+		'all_items'             => __( 'Все указы и распоряжения', 'text_domain' ),
+		'add_new_item'          => __( 'Новый документ', 'text_domain' ),
+		'add_new'               => __( 'Добавить новый', 'text_domain' ),
+		'new_item'              => __( 'Указ', 'text_domain' ),
+		'edit_item'             => __( 'Указ', 'text_domain' ),
+		'update_item'           => __( 'Указ', 'text_domain' ),
+		'view_item'             => __( 'Указ', 'text_domain' ),
+		'view_items'            => __( 'Указов', 'text_domain' ),
+		'search_items'          => __( 'Указов', 'text_domain' ),
+		'not_found'             => __( 'Указов', 'text_domain' ),
+		'not_found_in_trash'    => __( 'Указов', 'text_domain' ),
+		'featured_image'        => __( '', 'text_domain' ),
+		'set_featured_image'    => __( '', 'text_domain' ),
+		'remove_featured_image' => __( '', 'text_domain' ),
+		'use_featured_image'    => __( '', 'text_domain' ),
+		'insert_into_item'      => __( '', 'text_domain' ),
+		'uploaded_to_this_item' => __( '', 'text_domain' ),
+		'items_list'            => __( '', 'text_domain' ),
+		'items_list_navigation' => __( '', 'text_domain' ),
+		'filter_items_list'     => __( '', 'text_domain' ),
+	);
+	$args = array(
+		'label'                 => __( 'Указы', 'text_domain' ),
+		'description'           => __( 'Указы и распоряжения', 'text_domain' ),
+		'labels'                => $labels,
+		'supports'              => array( 'title', 'custom-fields' ),
+		'taxonomies'            => array(  ),
+		'hierarchical'          => false,
+		'public'                => true,
+		'publicly_queryable'	=> true,
+		'show_ui'               => true,
+		'show_in_menu'          => true,
+		'menu_position'         => 5,
+		'show_in_admin_bar'     => true,
+		'show_in_nav_menus'     => true,
+		'can_export'            => true,
+		'has_archive'           => 'ykaz',
+		'exclude_from_search'   => true,
+		'publicly_queryable'    => true,
+		'capability_type'       => 'page',
+	);
+	register_post_type( 'ykaz', $args );
+
+}
+add_action( 'init', 'custom_post_type', 0 );
+
+register_taxonomy_for_object_type( $ykazi, $ykaz );
+*/
+//конец
